@@ -1,0 +1,9 @@
+/bin/
+coverage.out
+*.test
+*.out
+.DS_Store
+
+# AI assistant skill assets (not part of the project)
+/agent/skills/
+/.agents/skills/
