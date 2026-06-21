@@ -46,6 +46,7 @@ table is generated from those files.
 
 | Capability | Requirements |
 |---|---|
+| [datasource-events](openspec/specs/datasource-events/spec.md) | EventSource port, Event value object, Filter value object, Kubernetes events adapter |
 | [desktop-notification](openspec/specs/desktop-notification/spec.md) | Notifier port, Desktop adapter, CLI test command |
 
 ## Contribute

@@ -7,3 +7,6 @@ coverage.out
 # AI assistant skill assets (not part of the project)
 /agent/skills/
 /.agents/skills/
+
+# graphify knowledge graph (generated, not part of the project)
+/graphify-out/
