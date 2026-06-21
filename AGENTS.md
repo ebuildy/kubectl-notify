@@ -108,6 +108,7 @@ behavioral deltas back into the relevant spec file here.
 - **`golangci-lint`** — run before every commit: `make lint`
 - **No global state** — all dependencies injected via constructors or context
 - **Errors wrapped with context** — `fmt.Errorf("planner: %w", err)` at every boundary
+- **`jq` for JSON** — parse and manipulate JSON on the command line with `jq`, never `python3 -c`
 
 ### Naming
 

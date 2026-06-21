@@ -29,6 +29,25 @@ kubectl notify --help
 Standard kubectl connection flags are supported: `--kubeconfig`, `--context`,
 `--namespace`, `--token`, etc.
 
+### Send a test notification
+
+Exercise the desktop notifier without a cluster connection:
+
+```bash
+kubectl notify test --title "Hello" --body "It works" --level normal
+```
+
+`--level` accepts `low`, `normal`, or `critical` (critical shows an alert).
+
+## Specs
+
+Long-lived behavioral specs live in [`openspec/specs/`](openspec/specs/). This
+table is generated from those files.
+
+| Capability | Requirements |
+|---|---|
+| [desktop-notification](openspec/specs/desktop-notification/spec.md) | Notifier port, Desktop adapter, CLI test command |
+
 ## Contribute
 
 ### Prerequisites

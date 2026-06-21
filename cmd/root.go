@@ -29,6 +29,8 @@ or FluxCD and turns them into desktop notifications, a local web UI, and more.`,
 
 	configFlags.AddFlags(cmd.PersistentFlags())
 
+	cmd.AddCommand(newTestCommand(streams))
+
 	return cmd
 }
 
