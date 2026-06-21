@@ -48,6 +48,9 @@ table is generated from those files.
 |---|---|
 | [datasource-events](openspec/specs/datasource-events/spec.md) | EventSource port, Event value object, Filter value object, Kubernetes events adapter |
 | [desktop-notification](openspec/specs/desktop-notification/spec.md) | Notifier port, Desktop adapter, CLI test command |
+| [event-notification-controller](openspec/specs/event-notification-controller/spec.md) | Controller bridge, time-windowed debounce buffering, burst summarisation, event-to-notification mapping, delivery-failure tolerance |
+| [watch-background-daemon](openspec/specs/watch-background-daemon/spec.md) | Background detach flag, single-instance guard, status command, stop command |
+| [watch-command](openspec/specs/watch-command/spec.md) | Watch pipeline, filter from flags, debounce/batch flags |
 
 ## Contribute
 
