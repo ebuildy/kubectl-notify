@@ -57,7 +57,11 @@ func TestWatchNotifiesObserverPerEvent(t *testing.T) {
 		t.Fatalf("observer saw %d events, want %d", len(got), len(want))
 	}
 	for i := range want {
-		if got[i] != want[i] {
+		// Event carries a Labels map, so it is not comparable with ==; compare
+		// the scalar identity fields that this test sets.
+		if got[i].Reason != want[i].Reason || got[i].Message != want[i].Message ||
+			got[i].Type != want[i].Type || got[i].Namespace != want[i].Namespace ||
+			got[i].Kind != want[i].Kind || got[i].Name != want[i].Name {
 			t.Errorf("event %d = %+v, want %+v", i, got[i], want[i])
 		}
 	}

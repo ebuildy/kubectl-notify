@@ -39,6 +39,34 @@ kubectl notify test --title "Hello" --body "It works" --level normal
 
 `--level` accepts `low`, `normal`, or `critical` (critical shows an alert).
 
+### Live web UI
+
+Start a local web server that streams cluster events to your browser as a live
+vertical timeline (newest on top, grouped into columns by reason and kind, with
+namespace and labels shown as chips and the card border colored by urgency):
+
+```bash
+kubectl notify web
+```
+
+The server binds to a loopback address, prints its URL, and opens your default
+browser. It is read-only and runs in the foreground until interrupted
+(Ctrl-C / SIGINT). Flags:
+
+| Flag | Default | Description |
+|---|---|---|
+| `--port` | `0` | Local port to bind (`0` = OS-chosen ephemeral port) |
+| `--no-open` | `false` | Print the URL but do not open the browser |
+| `--labels` | — | Label selector to filter events (e.g. `app=nginx`) |
+
+Standard kubectl connection flags (`--kubeconfig`, `--context`, `--namespace`)
+scope which events are watched.
+
+```bash
+# Watch only the default namespace, on a fixed port, without launching a browser
+kubectl notify web --namespace default --port 8088 --no-open
+```
+
 ## Specs
 
 Long-lived behavioral specs live in [`openspec/specs/`](openspec/specs/). This
@@ -51,6 +79,7 @@ table is generated from those files.
 | [event-notification-controller](openspec/specs/event-notification-controller/spec.md) | Controller bridge, time-windowed debounce buffering, burst summarisation, event-to-notification mapping, delivery-failure tolerance |
 | [watch-background-daemon](openspec/specs/watch-background-daemon/spec.md) | Background detach flag, single-instance guard, status command, stop command |
 | [watch-command](openspec/specs/watch-command/spec.md) | Watch pipeline, filter from flags, debounce/batch flags |
+| [web-ui](openspec/specs/web-ui/spec.md) | Web command lifecycle, Web server is an event observer, Bounded event buffer, HTTP and WebSocket API, Timeline rendering |
 
 ## Contribute
 

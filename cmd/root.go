@@ -31,6 +31,7 @@ or FluxCD and turns them into desktop notifications, a local web UI, and more.`,
 
 	cmd.AddCommand(newTestCommand(streams))
 	cmd.AddCommand(newWatchCommand(streams))
+	cmd.AddCommand(newWebCommand(streams))
 	cmd.AddCommand(newStatusCommand(streams))
 	cmd.AddCommand(newStopCommand(streams))
 

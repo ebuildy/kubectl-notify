@@ -1,4 +1,17 @@
-## ADDED Requirements
+# Web UI
+
+## Purpose
+
+Provide a local, glanceable view of recent cluster events. A `kubectl notify web`
+subcommand starts a loopback HTTP server, opens the browser, and streams events to
+a self-contained embedded single-page UI that renders them as a vertical timeline.
+The web server is an additional `events.Observer` wired directly to the
+`EventSource` (in parallel to the notification pipeline), keeps a bounded buffer of
+recent events, and fans each new event out to connected browsers over WebSocket.
+Read-only and loopback-only: it never mutates cluster state and requires no RBAC
+beyond the existing watch.
+
+## Requirements
 
 ### Requirement: Web command lifecycle
 
@@ -108,26 +121,33 @@ type, a derived `urgency` (`critical` for a `Warning` type, otherwise `normal`),
 ### Requirement: Timeline rendering
 
 The system SHALL serve a self-contained front-end, embedded in the binary, that renders events
-as a full-page vertical timeline with the most recent events at the top. On load it MUST fetch
-the buffered history from `/api/events` and then receive new events over the WebSocket. Events
-MUST be distributed horizontally into columns by group key (event reason and object kind), so
-that all events sharing a group appear in the same column. The layout MUST remain usable in a
-narrow window (down to roughly 200px wide) and MUST allow only vertical scrolling — it MUST NOT
-require horizontal scrolling. Each event MUST render as a card whose border color reflects its
-urgency level, and each card MUST display the event's namespace and labels as chip-style labels
-along with its identity (kind/name), reason, and message.
+as a single full-page vertical timeline with the most recent events at the top, ordered by event
+time. On load it MUST fetch the buffered history from `/api/events` and then receive new events
+over the WebSocket. Each event MUST be paired with a left-hand timeline rail that displays the
+event's time of day (hour and minute) and its day, against a continuous timeline line marked with
+a per-event dot, so the user can tell at a glance when each event occurred. The layout MUST remain
+usable in a narrow window (down to roughly 200px wide) and MUST allow only vertical scrolling — it
+MUST NOT require horizontal scrolling. Each event MUST render as a card whose border color reflects
+its urgency level, MUST always show the event's time, and MUST display the event's namespace and
+labels as chip-style labels along with its identity (kind/name), reason, and message.
 
 #### Scenario: Cards render newest-first in a vertical timeline
 
 - **WHEN** the page loads with buffered events
-- **THEN** each event is shown as a card and the most recent events appear at the top, older
-  events below
+- **THEN** each event is shown as a card in a single vertical timeline, ordered by event time with
+  the most recent events at the top and older events below
 
-#### Scenario: Events are grouped into horizontal columns
+#### Scenario: Left rail shows the event hour and day
 
-- **WHEN** events with different group keys (reason, kind) are rendered
-- **THEN** events are distributed horizontally into columns by group key, with events sharing a
-  group placed in the same column
+- **WHEN** an event card is rendered
+- **THEN** a left-hand timeline rail shows the event's time of day and its day next to a continuous
+  timeline line with a dot for that event
+
+#### Scenario: Event time is always shown
+
+- **WHEN** a card renders for an event, including one whose source timestamp is absent
+- **THEN** a time is always displayed for that event (falling back to its arrival time when the
+  source timestamp is missing)
 
 #### Scenario: Only vertical scrolling, usable when narrow
 
@@ -150,5 +170,5 @@ along with its identity (kind/name), reason, and message.
 #### Scenario: New events appear live
 
 - **WHEN** the page is open and a new event arrives over the WebSocket
-- **THEN** a new card for that event is added at the top of its group column without reloading
-  the page
+- **THEN** a new card for that event is inserted into the timeline at its time-ordered position
+  without reloading the page

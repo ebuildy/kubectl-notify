@@ -80,6 +80,79 @@ func TestWatchForwardsEvents(t *testing.T) {
 	}
 }
 
+// TestWatchMapsTimestampAndLabels asserts the timestamp fallback order
+// (EventTime → LastTimestamp → FirstTimestamp) and that the event object's own
+// metadata labels are mapped onto the port Event.
+func TestWatchMapsTimestampAndLabels(t *testing.T) {
+	first := time.Date(2026, 1, 1, 10, 0, 0, 0, time.UTC)
+	last := time.Date(2026, 1, 1, 11, 0, 0, 0, time.UTC)
+	eventTime := time.Date(2026, 1, 1, 12, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name   string
+		mutate func(e *corev1.Event)
+		want   time.Time
+	}{
+		{
+			name: "prefers EventTime",
+			mutate: func(e *corev1.Event) {
+				e.FirstTimestamp = metav1.NewTime(first)
+				e.LastTimestamp = metav1.NewTime(last)
+				e.EventTime = metav1.NewMicroTime(eventTime)
+			},
+			want: eventTime,
+		},
+		{
+			name: "falls back to LastTimestamp",
+			mutate: func(e *corev1.Event) {
+				e.FirstTimestamp = metav1.NewTime(first)
+				e.LastTimestamp = metav1.NewTime(last)
+			},
+			want: last,
+		},
+		{
+			name: "falls back to FirstTimestamp",
+			mutate: func(e *corev1.Event) {
+				e.FirstTimestamp = metav1.NewTime(first)
+			},
+			want: first,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ev := newEvent("default", "e1", "Started")
+			ev.Labels = map[string]string{"app": "nginx"}
+			tt.mutate(ev)
+
+			client := fake.NewSimpleClientset(ev)
+			adapter := k8sAdapter.NewWithClient(client)
+
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			got := make(chan eventsPort.Event, 1)
+			obs := eventsPort.ObserverFunc(func(_ context.Context, e eventsPort.Event) error {
+				got <- e
+				return nil
+			})
+			go func() { _ = adapter.Watch(ctx, nil, obs) }()
+
+			select {
+			case e := <-got:
+				if !e.Timestamp.Equal(tt.want) {
+					t.Errorf("timestamp = %v, want %v", e.Timestamp, tt.want)
+				}
+				if e.Labels["app"] != "nginx" {
+					t.Errorf("labels = %v, want app=nginx", e.Labels)
+				}
+			case <-time.After(2 * time.Second):
+				t.Fatal("timed out waiting for event")
+			}
+		})
+	}
+}
+
 // TestWatchUnsupportedFilterKey asserts an unrecognized filter key fails loudly
 // before the watch starts.
 func TestWatchUnsupportedFilterKey(t *testing.T) {

@@ -4,7 +4,10 @@
 // knowing about any concrete event technology, transport, or library.
 package events
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
 // Event is the value object carried through the EventSource port. Using a
 // struct keeps call sites stable as new fields are added over time. All fields
@@ -21,6 +24,14 @@ type Event struct {
 	Namespace string
 	Kind      string
 	Name      string
+	// Timestamp is when the event occurred, used to order a timeline. It is
+	// additive and optional: adapters that do not set it leave the zero value,
+	// and existing consumers that do not read it are unaffected.
+	Timestamp time.Time
+	// Labels is an optional set of labels associated with the event. It is
+	// additive and optional: a nil map is valid and ignored by consumers that
+	// do not read it.
+	Labels map[string]string
 }
 
 // Filter is a generic, technology-agnostic set of filter keys to values. The

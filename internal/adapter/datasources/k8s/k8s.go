@@ -6,6 +6,7 @@ package k8s
 import (
 	"context"
 	"fmt"
+	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -132,7 +133,23 @@ func mapEvent(e *corev1.Event) eventsPort.Event {
 		Namespace: e.InvolvedObject.Namespace,
 		Kind:      e.InvolvedObject.Kind,
 		Name:      e.InvolvedObject.Name,
+		Timestamp: eventTimestamp(e),
+		Labels:    e.Labels,
 	}
+}
+
+// eventTimestamp resolves the most meaningful occurrence time for a Kubernetes
+// Event: the EventTime (used by the newer events API), falling back to the
+// LastTimestamp, then the FirstTimestamp. Returns the zero time when none is
+// set. No additional API calls are made.
+func eventTimestamp(e *corev1.Event) time.Time {
+	if !e.EventTime.IsZero() {
+		return e.EventTime.Time
+	}
+	if !e.LastTimestamp.IsZero() {
+		return e.LastTimestamp.Time
+	}
+	return e.FirstTimestamp.Time
 }
 
 // buildWatchOptions translates the generic Filter into a watched namespace and

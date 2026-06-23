@@ -9,6 +9,7 @@ ignore (
 )
 
 require (
+	github.com/coder/websocket v1.8.15
 	github.com/gen2brain/beeep v0.11.2
 	github.com/spf13/cobra v1.10.2
 	k8s.io/api v0.36.2
